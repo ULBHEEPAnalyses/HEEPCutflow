@@ -1,0 +1,18 @@
+These scripts produce histograms to show the HEEP cutflow for a given sample in three
+scenarios:
+ - HEEP 4.1
+ - HEEP 5.0 (50 ns startup)
+ - HEEP 5.1 (25 ns main running)
+ 
+ The scripts are run in two steps:
+ 1) python HEEP_cutflow.py
+    This produces a file called histograms.root .  This script does most of the work.
+ 2) python combine_histograms.py
+    This combines the histograms to produce a single plot.
+
+The input ROOT files should be in a directory called "ntuples", and look like:
+  outfile_X.root where X=ZprimeToEE_M5000 etc
+You can change the name of the sample name by changing the variable sname at the start of
+the HEEP_cutflow.py script.
+
+The script expects a directory called "plots", where it stores the output.
