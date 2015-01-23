@@ -7,6 +7,7 @@
 ##########################################################################################
 
 import math
+import ROOT
 
 ##########################################################################################
 #                                  Settings for the job                                  #
@@ -21,8 +22,6 @@ colors['HEEP_cutflow50_25ns_total'] = ROOT.kGreen
 ##########################################################################################
 #                             Import ROOT and apply settings                             #
 ##########################################################################################
-import ROOT
-
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
 ROOT.gStyle.SetOptStat(0)
 ROOT.gStyle.SetPadTickX(1)
@@ -99,6 +98,7 @@ legend_cutflow.SetBorderSize(0)
 ##########################################################################################
 #                                   Draw everything                                      #
 ##########################################################################################
+canvas.cd()
 for cname in cutflow_names:
     draw_options = 'e3' if first else 'e3:sames'
     h = h_cutflows[cname][sname]
@@ -161,7 +161,7 @@ for cname in cutflow_names:
             legend_var.SetNColumns(2)
             legend_var.AddEntry(hRaw, 'Raw distribution'       , 'f')
             legend_var.AddEntry(hCum, 'Cumulative distribution', 'f')
-        
+            
             canvas_plots.GetPad(1).SetLogy(var_log[vname])
             canvas_plots.GetPad(2).SetLogy(var_log[vname])
         

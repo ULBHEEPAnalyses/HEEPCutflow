@@ -72,6 +72,7 @@ class var_object:
         self.histogram.SetMarkerColor(ROOT.kBlack)
         self.histogram.SetMarkerStyle(20)
 
+vars = {}
 var_names = []
 
 def add_variable(vname, nBins, lower, upper, xaxis, unit):
