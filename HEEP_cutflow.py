@@ -1,4 +1,21 @@
+##########################################################################################
+#                                  HEEP cutflow plotter                                  #
+##########################################################################################
+# (c) 2015 Aidan Randle-Conde (ULB)                                                      #
+# Contact: aidan.randleconde@gmail.com                                                   #
+# Github:  https://github.com/ULBHEEPAnalyses/HEEPCutFlow                                #
+##########################################################################################
+
 import math
+
+##########################################################################################
+#                                  Settings for the job                                  #
+##########################################################################################
+sname = 'ZprimeToEE_M5000_v5'
+
+##########################################################################################
+#                             Import ROOT and apply settings                             #
+##########################################################################################
 import ROOT
 
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -16,12 +33,18 @@ ROOT.gStyle.SetPadColor(ROOT.kWhite)
 ROOT.gStyle.SetStatColor(ROOT.kWhite)
 ROOT.gStyle.SetErrorX(0)
 
+##########################################################################################
+#                           Create canvas, create output file                            #
+##########################################################################################
 canvas = ROOT.TCanvas('canvas', '', 100, 100, 1200, 800)
 canvas.SetGridx()
 canvas.SetGridy()
 
 file_out = ROOT.TFile('histograms.root','RECREATE')
 
+##########################################################################################
+#                                Create variable objects                                 #
+##########################################################################################
 collection_suffixes = []
 collection_suffixes.append('ID'       )
 collection_suffixes.append('isolation')
@@ -50,35 +73,29 @@ class var_object:
         self.histogram.SetMarkerStyle(20)
 
 var_names = []
-var_names.append('Et'             )
-var_names.append('eta'            )
-var_names.append('EcalDriven'     )
-var_names.append('dEtaIn'         )
-var_names.append('dPhiIn'         )
-var_names.append('HOverE'         )
-var_names.append('SigmaIetaIeta'  )
-var_names.append('E1x5OverE5x5'   )
-var_names.append('E2x5OverE5x5'   )
-var_names.append('missingHits'    )
-var_names.append('dxyFirstPV'     )
-var_names.append('isolEMHadDepth1')
-var_names.append('IsolPtTrks'     )
 
-vars = {}
-vars['Et'             ] = var_object('Et'             ,  100,     0, 3000, 'E_{T}(e)'                , 'GeV')
-vars['eta'            ] = var_object('eta'            ,  100,    -3,    3, '#eta_{T}(e)'             , ''   )
-vars['EcalDriven'     ] = var_object('EcalDriven'     ,    3,  -1.5,  1.5, 'isEcalDriven(e)'         , ''   )
-vars['dEtaIn'         ] = var_object('dEtaIn'         ,  100, -0.05, 0.05, '#Delta#eta_{in}(e)'      , ''   )
-vars['dPhiIn'         ] = var_object('dPhiIn'         ,  100,  -0.1,  0.1, '#Delta#phi_{in}(e)'      , ''   )
-vars['HOverE'         ] = var_object('HOverE'         ,  100,     0,    1, 'H/E(e)'                  , ''   )
-vars['SigmaIetaIeta'  ] = var_object('SigmaIetaIeta'  ,  100,     0, 0.05, '#sigma_{i#etai#eta}(e)'  , ''   )
-vars['E1x5OverE5x5'   ] = var_object('E1x5OverE5x5'   ,  100,     0,    1, 'E_{1x5}/E_{5x5}(e)'      , ''   )
-vars['E2x5OverE5x5'   ] = var_object('E2x5OverE5x5'   ,  100,   0.5,    1, 'E_{2x5}/E_{5x5}(e)'      , ''   )
-vars['missingHits'    ] = var_object('missingHits'    ,   11,  -0.5, 10.5, 'missing hits (e)'        , ''   )
-vars['dxyFirstPV'     ] = var_object('dxyFirstPV'     ,  100,  -0.1,  0.1, 'd_{xy}^{PV}(e)'          , 'mm' )
-vars['isolEMHadDepth1'] = var_object('isolEMHadDepth1',  100,     0,   50, 'isolation_{HadDepth1}(e)', 'GeV')
-vars['IsolPtTrks'     ] = var_object('IsolPtTrks'     ,  100,     0,   10, 'isolation_{Tracks}(e)'   , ''   )
+def add_variable(vname, nBins, lower, upper, xaxis, unit):
+    var_names.append(vname)
+    vars[vname] = var_object(vname, nBins, lower, upper, xaxis, unit)
 
+add_variable('Et'             ,  100,     0, 3000, 'E_{T}(e)'                , 'GeV')
+add_variable('eta'            ,  100,    -3,    3, '#eta_{T}(e)'             , ''   )
+add_variable('EcalDriven'     ,    3,  -1.5,  1.5, 'isEcalDriven(e)'         , ''   )
+add_variable('dEtaIn'         ,  100, -0.05, 0.05, '#Delta#eta_{in}(e)'      , ''   )
+add_variable('dPhiIn'         ,  100,  -0.1,  0.1, '#Delta#phi_{in}(e)'      , ''   )
+add_variable('HOverE'         ,  100,     0,    1, 'H/E(e)'                  , ''   )
+add_variable('SigmaIetaIeta'  ,  100,     0, 0.05, '#sigma_{i#etai#eta}(e)'  , ''   )
+add_variable('E1x5OverE5x5'   ,  100,     0,    1, 'E_{1x5}/E_{5x5}(e)'      , ''   )
+add_variable('E2x5OverE5x5'   ,  100,   0.5,    1, 'E_{2x5}/E_{5x5}(e)'      , ''   )
+add_variable('missingHits'    ,   11,  -0.5, 10.5, 'missing hits (e)'        , ''   )
+add_variable('dxyFirstPV'     ,  100,  -0.1,  0.1, 'd_{xy}^{PV}(e)'          , 'mm' )
+add_variable('isolEMHadDepth1',  100,     0,   50, 'isolation_{HadDepth1}(e)', 'GeV')
+add_variable('IsolPtTrks'     ,  100,     0,   10, 'isolation_{Tracks}(e)'   , ''   )
+
+##########################################################################################
+#                                 Assemble the cutflows                                  #
+# This is somewhat arbitrary.  The HEEP group does not define an order of cuts.          #
+##########################################################################################
 cut_suffixes['ID'].append('Et'           )
 cut_suffixes['ID'].append('eta'          )
 cut_suffixes['ID'].append('EcalDriven'   )
@@ -96,11 +113,9 @@ cut_suffixes['isolation'].append('IsolPtTrks'     )
 
 cut_suffixes['total'] = cut_suffixes['ID']+cut_suffixes['isolation']
 
-cutflow_prefixes = []
-cutflow_prefixes.append('HEEP_cutflow41'     )
-cutflow_prefixes.append('HEEP_cutflow50_25ns')
-cutflow_prefixes.append('HEEP_cutflow50_50ns')
-
+##########################################################################################
+#                              Class for storing electrons                               #
+##########################################################################################
 regions = ['barrel','endcap']
 
 class cutflow_instance_object:
@@ -111,9 +126,12 @@ class cutflow_instance_object:
 
 class electron_object:
     def __init__(self, cutflows_in, tree, i_el):
+        # Quick sanity check
         self.isValid = i_el < len(tree.HEEP_cutflow41_total)
         if self.isValid == False:
             return
+        
+        # Everthing is okay, so store p4 and information about detector region
         self.pt     = tree.gsf_pt[i_el]
         self.eta    = tree.gsf_eta[i_el]
         self.phi    = tree.gsf_phi[i_el]
@@ -122,6 +140,7 @@ class electron_object:
         self.p4 = ROOT.TLorentzVector()
         self.p4.SetPtEtaPhiE(self.pt, self.eta, self.phi, self.energy)
         
+        # Match against the truth record to ensure E(reco)/E(gen) > 0.9
         self.DR_matched = False
         self.DR_best_energy_ratio = 0
         for i_mc in range(0,len(tree.mc_energy)):
@@ -135,6 +154,9 @@ class electron_object:
         if self.DR_best_energy_ratio < 0.9:
             self.isValid = False
         
+        # For each electron, analyse the various cutflows
+        # Results are stored as bitmaps which are parsed later on
+        # So a given cutflow might look like "110100110"
         self.cutflows = {}
         self.cutflow_bitmaps = {}
         for c in cutflows_in:
@@ -151,23 +173,45 @@ class electron_object:
                     self.cutflow_bitmaps[cname] += math.pow(2,i_cn+1)
             self.cutflow_bitmaps[cname] = int(self.cutflow_bitmaps[cname])
 
+##########################################################################################
+#                              Class for storing cutflows                                #
+# This class does all the hard work.  For each cut it stores:                            #
+#   - the number of events that pass that cut                                            #
+#   - the number of electrons that pass that cut                                         #
+# For both events and electrons the numbers are stored in terms of:                      #
+#   - passing that particular cut (cut n)                                                #
+#   - passing that particular cut and all before it (cumulative n)                       #
+#   - passing all but that particular cut (N-1 n)                                        #
+# The class also has a histogram for showing the distributions of each variables for     #
+# four different scenarios:                                                              #
+#   - no selection applied (raw distribution)                                            #
+#   - passing that particular cut (cut distribution)                                     #
+#   - passing that particular cut and all before it (cumulative distribution)            #
+#   - passing all but that particular cut (N-1 distribution)                             #
+##########################################################################################
 class cutflow:
     def __init__(self, prefix, suffix):
         self.prefix = prefix
         self.suffix = suffix
         self.name   = '%s_%s'%(self.prefix,self.suffix)
         self.cut_names = []
+        
+        # Store information about how many events/electrons pass each cut
         self.nEvents               = {}
         self.NM1_nEvents           = {}
         self.cumulative_nEvents    = {}
         self.nElectrons            = {}
         self.NM1_nElectrons        = {}
         self.cumulative_nElectrons = {}
+        
+        # Get the cut names.  Somewhat clunky way to do this.
         self.cut_suffixes = cut_suffixes[self.suffix]
         for cs in cut_suffixes[self.suffix]:
             self.cut_names.append('%s_%s'%(self.prefix,cs))
         self.reset()
+        self.nFail = 0
         
+        # Create histogram to store events, save this to file
         file_out.cd()
         self.hEvents = ROOT.TH1I('hEvents_%s'%(self.name), '', 1+len(self.cut_names), -0.5, 0.5+len(self.cut_names))
         self.hEvents.GetXaxis().SetTitle('')
@@ -181,11 +225,9 @@ class cutflow:
         self.hEvents.SetMarkerColor(ROOT.kRed)
         self.hEvents.SetMarkerStyle(20)
         self.hEvents.SetMinimum(0)
-        
-        self.nFail = 0
     
     def analyse_events(self, events, sname):
-        # Make histograms
+        # Make histograms, each with a unique name
         h_raw = {}
         h_cum = {}
         h_cut = {}
@@ -203,33 +245,47 @@ class cutflow:
                 h_NM1[cs][rname] = vars[cs].histogram.Clone('hNM1_%s_%s_%s_%s'%(self.name,cs,sname,rname))
                 h_cum[cs][rname].SetFillColor(ROOT.kYellow)
         
+        # Reset values and loop over events
         self.reset()
         for ev in events:
             ev_success            = {}
             ev_success_cumulative = {}
             ev_success_NM1        = {}
-            self.nEvents['raw']    += 1
+            
+            # Increment the raw values. (Recall that an "event" is a list of "electron" classes.)
+            self.   nEvents['raw'] += 1
             self.nElectrons['raw'] += len(ev)
+            
+            # Reset the event success flag for this event for each cut
             for cn in self.cut_names:
                 ev_success[cn]            = 0
                 ev_success_NM1[cn]        = 0
                 ev_success_cumulative[cn] = 0
+            
+            # Now loop over the cuts to get their flag for this event
             for i_cn in range(0,len(self.cut_names)):
-                cn = self.cut_names[i_cn]
-                hKey = cut_suffixes[self.suffix][i_cn]
+                cn = self.cut_names[i_cn]              # Cut name
+                hKey = cut_suffixes[self.suffix][i_cn] # array key for histogram
+                
+                # Loop over the electrons in this event
                 for el in ev:
+                    # Sanity checks to make sure the electron is "good" and has cutflow bitmaps stored
                     if el.isValid == False:
                         continue
                     if not el.cutflow_bitmaps:
                         continue
                     
+                    # Now parse the bitmaps.  This is a bit messy.
                     bitmap = el.cutflow_bitmaps[self.name]
                     b_thisCut           = int(math.pow(2,i_cn+1)  )
                     b_thisCutCumulative = int(math.pow(2,i_cn+1)-1)
                     b_thisCutNM1        = int(math.pow(2,len(self.cut_names)+1)-math.pow(2,i_cn+1)-1)
                     
+                    # Get the value of the variable for this electron
                     value = el.cutflows[self.name][i_cn+1].value
                     r = el.region
+                    
+                    # Now fill the histograms
                     h_raw[hKey][r].Fill(value)
                     if (bitmap & b_thisCut) == b_thisCut:
                         ev_success[cn]            += 1
@@ -243,6 +299,9 @@ class cutflow:
                         ev_success_NM1     [cn] += 1
                         self.NM1_nElectrons[cn] += 1
                         h_NM1[hKey][r].Fill(value)
+            
+            # Fill in the cutflow information for the event.
+            # An event passes if at least two electrons pass.
             for cn in self.cut_names:
                 if ev_success[cn] >= 2:
                     self.nEvents[cn] += 1
@@ -261,6 +320,7 @@ class cutflow:
                 h_NM1[hName][rname].Write()
    
     def print_results(self):
+        # Print results to screen in a nice table
         print '%40s  %15s  %15s  %15s  %15s  %15s  %15s'%('', 'nEvents', 'cum nEvents', 'N-1 events', 'nElectrons', 'cum nElectrons', 'N-1 electrons')
         print '%40s  %15s  %15d  %15s  %15s  %15d  %15s'%('Raw', '', self.nEvents['raw'], '', '', self.nElectrons['raw'], '')
         for cn in self.cut_names:
@@ -273,15 +333,24 @@ class cutflow:
         return h
     def reset(self):
         for cn in self.cut_names:
-            self.nEvents[cn]               = 0
-            self.NM1_nEvents[cn]           = 0
-            self.cumulative_nEvents[cn]    = 0
-            self.nElectrons[cn]            = 0
-            self.NM1_nElectrons[cn]        = 0
+            self.              nEvents[cn] = 0
+            self.          NM1_nEvents[cn] = 0
+            self.   cumulative_nEvents[cn] = 0
+            self.           nElectrons[cn] = 0
+            self.       NM1_nElectrons[cn] = 0
             self.cumulative_nElectrons[cn] = 0
-        self.nEvents['raw']    = 0
+        self.   nEvents['raw'] = 0
         self.nElectrons['raw'] = 0
-        
+
+##########################################################################################
+#                                 Assemble the cutflows                                  #
+# This is somewhat arbitrary.  The HEEP group does not define an order of cuts.          #
+##########################################################################################
+cutflow_prefixes = []
+cutflow_prefixes.append('HEEP_cutflow41'     )
+cutflow_prefixes.append('HEEP_cutflow50_25ns')
+cutflow_prefixes.append('HEEP_cutflow50_50ns')
+
 cutflows = []
 for cp in cutflow_prefixes:
     for cs in collection_suffixes:
@@ -289,16 +358,19 @@ for cp in cutflow_prefixes:
             continue
         cutflows.append(cutflow(cp, cs))
 
-sname = 'DYEE'
-sname = 'ZprimeToEE_M5000_v5'
+##########################################################################################
+#                    Read the input file, turn off unwanted branches                     #
+##########################################################################################
 file = ROOT.TFile('ntuples/outfile_%s.root'%sname,'READ')
-#file = ROOT.TFile('ntuples/20141002/outfile_%s_skimmed_slimmed.root'%sname,'READ')
 tree = file.Get('IIHEAnalysis')
 tree.SetBranchStatus('*'     ,0)
 tree.SetBranchStatus('mc_*'  ,1)
 tree.SetBranchStatus('gsf_*' ,1)
 tree.SetBranchStatus('HEEP_*',1)
 
+##########################################################################################
+#                      Run over the events to create the electrons                       #
+##########################################################################################
 events = []
 nEntries = tree.GetEntries()
 nEntries = 10000
@@ -313,7 +385,10 @@ for i in range(0, nEntries):
         if el.isValid:
             electrons.append(el)
     events.append(electrons)
-    
+
+##########################################################################################
+#      Populated the cutflows with the events, save to file, and print raw results       #
+##########################################################################################
 for c in cutflows:
     cname = c.name
     if 'total' not in cname:
