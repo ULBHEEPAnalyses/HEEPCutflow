@@ -64,6 +64,13 @@ for t in CMS_label_texts:
     CMS_labels[t].SetNDC()
 CMS_label = CMS_labels['internal']
 
+region_labels = {}
+
+region_labels['barrel'] = ROOT.TLatex(0.2,0.945,'Barrel')
+region_labels['endcap'] = ROOT.TLatex(0.2,0.945,'Endcap')
+region_labels['barrel'].SetNDC()
+region_labels['endcap'].SetNDC()
+
 ##########################################################################################
 #                             Get input file, set up cutflows                            #
 ##########################################################################################
@@ -182,12 +189,14 @@ for cname in cutflow_names:
             hRaw.Draw('sames:axis')
             legend_var.Draw()
             CMS_label.Draw()
+            region_labels[rname].Draw()
             
             # Then N-1
             canvas_plots.cd(2)
             hNM1.Draw()
             NM1_label.Draw()
             CMS_label.Draw()
+            region_labels[rname].Draw()
         
             canvas_plots.Print('plots/vars/%s_%s_%s_%s.eps'%(cname, vname, sname, rname))
 
